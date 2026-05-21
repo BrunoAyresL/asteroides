@@ -1,0 +1,42 @@
+Exemplo Modo Gráfico/caracter.asm
+Exemplo Modo Gráfico/circle.asm
+Exemplo Modo Gráfico/cursor.asm
+Exemplo Modo Gráfico/Data.asm
+Exemplo Modo Gráfico/fcircle.asm
+Exemplo Modo Gráfico/line.asm
+Exemplo Modo Gráfico/linec.asm
+Exemplo Modo Gráfico/main.asm
+Exemplo Modo Gráfico/Make.bat
+Exemplo Modo Gráfico/plot_xy.asm
+AST.LST
+AST.OBJ
+C5OVLMGR.OBJ
+C501OVL.PRJ
+COLISAO.LST
+COLISAO.OBJ
+DBU.PRJ
+debug.e
+debug.exe
+TECLADO.LST
+TECLADO.OBJ
+TEST.LST
+TEST.OBJ
+WARPCONV.EXE
+WARPMOD.EXE
+TABLES.LST
+TABLES.OBJ
+RENDER.LST
+RENDER.OBJ
+S87OVL.PRJ
+NAVE.LST
+NAVE.OBJ
+ORDER.FRM
+OVLMGR.OBJ
+READ.ME
+MAIN.EXE
+MAIN.LST
+MAIN.OBJ
+DISPARO.LST
+DISPARO.OBJ
+FREELINK.DOC
+IW.EXE
