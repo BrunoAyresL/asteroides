@@ -185,23 +185,26 @@ plot_xy:
 		PUSH	DX
 		PUSH	SI
 		PUSH	DI
-		;	X
-        MOV     AX,[BP+6]
+	
+		CMP 	byte [cor], 4
+		JNE		segue_plot
 
-        CMP     AX,0
+        MOV     AX, [BP+6]
+
+        CMP     AX, 40
         JL      fim_plot
 
-        CMP     AX,639
+        CMP     AX, 599
         JG      fim_plot
 
-        ;   Y
-        MOV     AX,[BP+4]
+        MOV     AX, [BP+4]
 
-        CMP     AX,0
+        CMP     AX, 40
         JL      fim_plot
 
-        CMP     AX,479
+        CMP     AX,439
         JG      fim_plot
+segue_plot:
 
 ;Preparando para chamar a int 10h	    
 	    MOV     AH,0Ch      ;INT 10h/AH = 0Ch - change color for a single pixel.
@@ -497,4 +500,3 @@ linha   	    dw  	0
 coluna  	    dw  	0
 deltax		    dw		0
 deltay		    dw		0	
-mens    	    db  	'Função Gráfica Sistemas Embarcados I $' 

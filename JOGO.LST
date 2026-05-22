@@ -1,0 +1,175 @@
+     1                                  global processar_entrada, atualizar_nave, atualizar_asteroides, render_jogo
+     2                                  global ast_tempo_spawn, vidas, tempo
+     3                                  
+     4                                  extern teclas, tecla_w, tecla_s, tecla_a, tecla_d, tecla_p	; teclado.asm
+     5                                  extern render_nave, nave_angulo, nave_movendo, nave_tras	; nave.asm
+     6                                  extern render_asteroide, spawn_asteroide	; ast.asm
+     7                                  extern checar_colisao	; colisao.asm
+     8                                  extern cor, line 	; render.asm
+     9                                  extern estado_atual, estado_pausado 	; main.asm
+    10                                  
+    11                                  processar_entrada:								; interpreta a saída do teclado para o jogo
+    12 00000000 F706[0000][0000]                TEST    word [teclas], tecla_w			; tecla W move a nave para frente
+    13 00000006 7405                            JZ      checar_a
+    14 00000008 C606[0000]01                    MOV     byte [nave_movendo], 1
+    15                                  checar_a:
+    16 0000000D F706[0000][0000]                TEST    word [teclas], tecla_a			; tecla A gira a nave para a esquerda
+    17 00000013 7405                            JZ      checar_s
+    18 00000015 8006[0000]07                    ADD		byte [nave_angulo], 7
+    19                                  checar_s:
+    20 0000001A F706[0000][0000]                TEST    word [teclas], tecla_s			; tecla S move a nave para trás
+    21 00000020 740A                            JZ      checar_d
+    22 00000022 C606[0000]01                    MOV     byte [nave_movendo], 1
+    23 00000027 C606[0000]01            		MOV		byte [nave_tras], 1
+    24                                  checar_d:
+    25 0000002C F706[0000][0000]                TEST    word [teclas], tecla_d			; tecla D gira a nave para a direita
+    26 00000032 7405                            JZ      checar_p
+    27 00000034 802E[0000]07                    SUB     byte [nave_angulo], 7
+    28                                  checar_p:
+    29 00000039 F706[0000][0000]        		TEST	word [teclas], tecla_p			; tecla P pausa o jogo
+    30 0000003F 740E                    		JZ		fim_entrada
+    31 00000041 C606[0000]04            		MOV		byte [estado_atual], 4
+    32 00000046 B8[0000]                		MOV 	AX, tecla_p
+    33 00000049 F7D0                    		NOT 	AX
+    34 0000004B 2106[0000]              		AND		word [teclas], AX
+    35                                  
+    36                                  fim_entrada:
+    37 0000004F C3                      		RET
+    38                                  
+    39                                  
+    40                                  
+    41                                  atualizar_nave:
+    42 00000050 E8(0000)                		CALL	checar_colisao						; checa a colisão entre asteroide - nave
+    43 00000053 E8(0000)                		CALL    render_nave							; calcula a posição e desenha a nave
+    44 00000056 C3                      		RET
+    45                                  
+    46                                  atualizar_asteroides:
+    47 00000057 50                      		PUSH 	AX									; salva contexto
+    48 00000058 FF06[0200]              		INC 	word [ast_contador_spawn]			; incrementa o contador de spawn
+    49 0000005C A1[0000]                		MOV		AX, word [ast_tempo_spawn]	
+    50 0000005F 3906[0200]              		CMP 	word [ast_contador_spawn], AX		; compara com o tempo definido pela dificuldade
+    51 00000063 7508                    		JNE 	atualizar_asteroides_fim
+    52 00000065 C606[0200]00            		MOV		byte [ast_contador_spawn], 0	
+    53 0000006A E8(0000)                		CALL 	spawn_asteroide						; spawna 1 asteroide
+    54                                  atualizar_asteroides_fim:
+    55 0000006D E8(0000)                		CALL 	render_asteroide					; calcula a posição e desenha os asteroides
+    56 00000070 58                      		POP 	AX									; recupera contexto
+    57 00000071 C3                      		RET
+    58                                  
+    59                                  render_jogo:										; desenha o HUD
+    60 00000072 50                      		PUSH 	AX
+    61 00000073 51                      		PUSH	CX
+    62 00000074 52                      		PUSH 	DX
+    63 00000075 56                      		PUSH 	SI
+    64                                  
+    65                                  
+    66 00000076 C606[0000]07            		MOV 	byte [cor], 7
+    67 0000007B B82800                  		MOV		AX, 40
+    68 0000007E 50                      		PUSH	AX
+    69 0000007F B82800                  		MOV 	AX, 40
+    70 00000082 50                      		PUSH 	AX
+    71 00000083 B85802                  		MOV 	AX, 600
+    72 00000086 50                      		PUSH 	AX
+    73 00000087 B82800                  		MOV 	AX, 40
+    74 0000008A 50                      		PUSH 	AX
+    75 0000008B E8(0000)                        CALL    line  
+    76                                  
+    77 0000008E B82800                  		MOV		AX, 40
+    78 00000091 50                      		PUSH	AX
+    79 00000092 B82800                  		MOV 	AX, 40
+    80 00000095 50                      		PUSH 	AX
+    81 00000096 B82800                  		MOV 	AX, 40
+    82 00000099 50                      		PUSH 	AX
+    83 0000009A B8B801                  		MOV 	AX, 440
+    84 0000009D 50                      		PUSH 	AX
+    85 0000009E E8(0000)                        CALL    line  
+    86                                  
+    87 000000A1 B85802                  		MOV		AX, 600
+    88 000000A4 50                      		PUSH	AX
+    89 000000A5 B82800                  		MOV 	AX, 40
+    90 000000A8 50                      		PUSH 	AX
+    91 000000A9 B85802                  		MOV 	AX, 600
+    92 000000AC 50                      		PUSH 	AX
+    93 000000AD B8B801                  		MOV 	AX, 440
+    94 000000B0 50                      		PUSH 	AX
+    95 000000B1 E8(0000)                        CALL    line  
+    96                                  
+    97 000000B4 B82800                  		MOV		AX, 40
+    98 000000B7 50                      		PUSH	AX
+    99 000000B8 B8B801                  		MOV 	AX, 440
+   100 000000BB 50                      		PUSH 	AX
+   101 000000BC B85802                  		MOV 	AX, 600
+   102 000000BF 50                      		PUSH 	AX
+   103 000000C0 B8B801                  		MOV 	AX, 440
+   104 000000C3 50                      		PUSH 	AX
+   105 000000C4 E8(0000)                        CALL    line  
+   106                                  
+   107                                  
+   108 000000C7 BE[0700]                		MOV 	SI, vida_hud_pontos
+   109 000000CA BA0000                  		MOV 	DX, 0
+   110                                  		
+   111 000000CD 8A0E[0400]              		MOV 	CL, byte [vidas]
+   112 000000D1 30ED                    		XOR 	CH, CH
+   113 000000D3 80F900                  		CMP 	CL, 0
+   114 000000D6 764B                    		JBE		fim_render_jogo
+   115                                  desenhar_vidas:
+   116                                  
+   117 000000D8 A1[0700]                		MOV		AX, word [vida_hud_pontos]
+   118 000000DB 01D0                    		ADD		AX, DX
+   119 000000DD 50                      		PUSH	AX
+   120 000000DE A1[0900]                		MOV		AX, word [vida_hud_pontos + 2]
+   121 000000E1 50                      		PUSH 	AX
+   122 000000E2 A1[0B00]                		MOV		AX, word [vida_hud_pontos + 4]
+   123 000000E5 01D0                    		ADD		AX, DX
+   124 000000E7 50                      		PUSH 	AX
+   125 000000E8 A1[0D00]                		MOV		AX, word [vida_hud_pontos + 6]
+   126 000000EB 50                      		PUSH 	AX
+   127 000000EC E8(0000)                        CALL    line  
+   128                                  
+   129 000000EF A1[0700]                		MOV		AX, word [vida_hud_pontos]
+   130 000000F2 01D0                    		ADD		AX, DX
+   131 000000F4 50                      		PUSH	AX
+   132 000000F5 A1[0900]                		MOV		AX, word [vida_hud_pontos + 2]
+   133 000000F8 50                      		PUSH 	AX
+   134 000000F9 A1[0F00]                		MOV		AX, word [vida_hud_pontos + 8]
+   135 000000FC 01D0                    		ADD		AX, DX
+   136 000000FE 50                      		PUSH 	AX
+   137 000000FF A1[1100]                		MOV		AX, word [vida_hud_pontos + 10]
+   138 00000102 50                      		PUSH 	AX
+   139 00000103 E8(0000)                        CALL    line  
+   140                                  
+   141 00000106 A1[0F00]                		MOV		AX, word [vida_hud_pontos + 8]
+   142 00000109 01D0                    		ADD		AX, DX
+   143 0000010B 50                      		PUSH	AX
+   144 0000010C A1[1100]                		MOV		AX, word [vida_hud_pontos + 10]
+   145 0000010F 50                      		PUSH 	AX
+   146 00000110 A1[0B00]                		MOV		AX, word [vida_hud_pontos + 4]
+   147 00000113 01D0                    		ADD		AX, DX
+   148 00000115 50                      		PUSH 	AX
+   149 00000116 A1[0D00]                		MOV		AX, word [vida_hud_pontos + 6]
+   150 00000119 50                      		PUSH 	AX
+   151 0000011A E8(0000)                        CALL    line  
+   152                                  
+   153 0000011D 81C22800                		ADD 	DX, 40
+   154 00000121 E2B5                    		LOOP	desenhar_vidas
+   155                                  
+   156                                  fim_render_jogo:
+   157                                  
+   158 00000123 5E                      		POP 	SI
+   159 00000124 5A                      		POP		DX
+   160 00000125 59                      		POP 	CX
+   161 00000126 58                      		POP 	AX
+   162 00000127 C3                      		RET
+   163                                  
+   164                                  
+   165                                  segment data 
+   166                                  
+   167 00000000 1E00                    ast_tempo_spawn				dw   30
+   168 00000002 0000                    ast_contador_spawn			dw   0
+   169 00000004 03                      vidas       				db   3
+   170 00000005 0000                    tempo       				dw   0
+   171                                  
+   172                                  vida_hud_pontos:
+   173 00000007 F401C201                	dw 500, 450
+   174 0000000B FE01D601                	dw 510, 470
+   175 0000000F 0802C201                	dw 520, 450

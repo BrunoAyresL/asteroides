@@ -6,4 +6,5 @@ call nasm teclado
 call nasm ast
 call nasm disparo
 call nasm colisao
-call freelink main render tables nave teclado ast disparo colisao
+call nasm jogo
+call freelink main render tables nave teclado ast disparo colisao jogo

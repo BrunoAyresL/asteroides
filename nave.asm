@@ -1,18 +1,13 @@
-extern tabela_sen, tabela_cos, line, cor
-global render_nave, matar_nave
+extern tabela_sen, tabela_cos, line, cor, vidas, reseta_asteroides
+global render_nave, matar_nave, 
 global nave_angulo, nave_movendo, nave_tras, nave_real
 
 
 ; a fazer:
-; comentar arquivo nave.asm X
-; adicionar colisão 
 ; criar wireframe do asteroide (modelo)
 ; criar disparo (plot_xy, circulo pequeno)
-; criar os estados de telas (pause, dificuldade, game over, etc)
 ; normalizar o tempo dos movimentos (se possível)
 ; organizar o arquivo render, talvez refazer as partes fáceis
-; conectar colisão com dano e vida
-; criar hud e bordas do mapa
 
 
 
@@ -57,7 +52,7 @@ atualizar_posicao:                              ; atualiza x e y baseado na velo
         PUSH    BX
 
         INC     byte [contador_mov]
-        CMP     byte [contador_mov], 3          ; só atualiza a posição da nave a cada 3 ciclos
+        CMP     byte [contador_mov], 1          ; só atualiza a posição da nave a cada 3 ciclos
         JB      final_pos
         MOV     byte [contador_mov], 0
 
@@ -104,25 +99,27 @@ checar_colisao:                         ; checa colisões com as paredes e corri
         MOV     SI, nave_real           ; SI -> x0, y0, x1, y1, x2, y2 dos pontos
         MOV     CX, 3                   ; loop nos 3 pontos da nave
 colisao_ponto_x1:
-        CMP     word [SI], 0            ; parede esquerda 
-        JGE     colisao_ponto_x2           
-        MOV     AX, word [SI]
-        SUB     word [nave_x], AX       ; reposiciona a nave
+        CMP     word [SI], 40            ; parede esquerda 
+        JGE     colisao_ponto_x2        
+        MOV     AX, 40   
+        SUB     AX, word [SI]
+        ADD     word [nave_x], AX       ; reposiciona a nave
 colisao_ponto_x2:
-        CMP     word [SI], 639         ; parede direita
+        CMP     word [SI], 599         ; parede direita
         JLE     colisao_ponto_y1    
-        MOV     AX, 639
+        MOV     AX, 599
         SUB     AX, word [SI]           ; reposiciona a nave
         ADD     word [nave_x], AX
 colisao_ponto_y1:
-        CMP     word [SI + 2], 0        ; parede baixo
+        CMP     word [SI + 2], 40        ; parede baixo
         JGE     colisao_ponto_y2
-        MOV     AX, word [SI + 2]
-        SUB     word [nave_y], AX       ; reposiciona a nave
+        MOV     AX, 40
+        SUB     AX, word [SI + 2]
+        ADD     word [nave_y], AX       ; reposiciona a nave
 colisao_ponto_y2:
-        CMP     word [SI + 2], 479     ; parede cima
+        CMP     word [SI + 2], 439     ; parede cima
         JLE     fim_colisao
-        MOV     AX, 479
+        MOV     AX, 439
         SUB     AX, [SI + 2]
         ADD     word [nave_y], AX       ; reposiciona a nave
 fim_colisao:
@@ -210,13 +207,17 @@ calcular_sen_cos:
         RET
 
 matar_nave:
-        MOV     word [nave_x], 320
-        MOV     word [nave_y], 240
-        MOV     byte [nave_angulo], 64
-        DEC     byte [nave_vidas]
+        MOV     word [nave_x], 320      ; retorna a nave para o meio
+        MOV     word [nave_y], 240          
+        MOV     byte [nave_angulo], 64  ; reseta o ângulo da nave
+        DEC     byte [vidas]            ; diminui uma vida
+        CALL    reseta_asteroides       ; mata todos asteroides
+        MOV     AL,12h                  ; limpa a tela e pisca para indicar morte
+   	MOV     AH,0
+    	INT     10h
         RET
 
-; --------------------
+
 segment data
 
 nave_x dw 320 
@@ -225,7 +226,6 @@ nave_angulo db 64
 nave_vx dw 0
 nave_vy dw 0
 
-nave_vidas db 3
 nave_vel db 12
 
 nave_movendo db 0
@@ -244,5 +244,3 @@ nave_real:                              ; pontos na tela
     dw      0, 0
     dw      0, 0 
     dw      0, 0
-
-; --------------------

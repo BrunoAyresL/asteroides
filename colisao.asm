@@ -22,8 +22,8 @@ colisao_ponto:
         IMUL    AX
         MOV     word [dist_x], AX           ; dist_x LOW
         MOV     word [dist_x + 2], DX       ; dist_x HIGH
-                    ; resultado = DX:AX
-        MOV     AX, word [DI + 2]
+                   
+        MOV     AX, word [DI + 2]           ; resultado = DX:AX
         SUB     AX, word [SI + ast_y]
         IMUL    AX
 

@@ -1,6 +1,7 @@
+global teclas, tecla_w, tecla_a, tecla_s, tecla_d, tecla_p, tecla_q, tecla_y, tecla_n, tecla_enter 
 global iniciar_teclado
 global encerrar_teclado
-extern key_q, key_a, key_d, key_w, key_s, key_p
+
 
 segment code
 
@@ -33,75 +34,90 @@ encerrar_teclado:										; Ao sair do programa temos que restaurar o CS:IP da 
 keyINT:									; Este segmento de código só será executado se uma tecla for presionada, ou seja, se a INT 9h for acionada!
         PUSH    AX	
         PUSH    DS
-        MOV     AX, SEG key_q
+        MOV     AX, SEG teclas
         MOV     DS, AX			; Le a porta 60h, que é onde está o byte do Make/Break da tecla. Esse valor é fornecido pelo chip "8255 PPI"
         IN      AL, kb_data
 a_press:
         CMP     AL, 1Eh
         JNE     a_break
-        MOV     byte [key_a], 1
-        JMP     fim
-
+        OR      word [teclas], tecla_a
 a_break:
         CMP     AL, 9Eh
         JNE     d_press
-        MOV     byte [key_a], 0
-        JMP     fim
+        MOV     AX, tecla_a     
+        NOT     AX
+        AND     word [teclas], AX
 d_press:
         CMP     AL, 20h
         JNE     d_break
-        MOV     byte [key_d], 1
-        JMP     fim
-
+        OR      word [teclas], tecla_d
 d_break:
         CMP     AL, 0A0h
         JNE     q_press
-        MOV     byte [key_d], 0
-        JMP     fim
+        MOV     AX, tecla_d     
+        NOT     AX
+        AND     word [teclas], AX
 q_press:
         CMP     AL, 10h
         JNE     q_break
-        MOV     byte [key_q], 1
-        JMP     fim
-
+        OR      word [teclas], tecla_q
 q_break:
         CMP     AL, 90h
         JNE     w_press
-        MOV     byte [key_q], 0
-        JMP     fim
+        MOV     AX, tecla_q     
+        NOT     AX
+        AND     word [teclas], AX
 w_press:
         CMP     AL, 11h
         JNE     w_break
-        MOV     byte [key_w], 1
-        JMP     fim
-
+        OR      word [teclas], tecla_w
 w_break:
         CMP     AL, 91h
         JNE     s_press
-        MOV     byte [key_w], 0
-        JMP     fim
+        MOV     AX, tecla_w     
+        NOT     AX
+        AND     word [teclas], AX
 s_press:
         CMP     AL, 1Fh
         JNE     s_break
-        MOV     byte [key_s], 1
-        JMP     fim
-
+        OR      word [teclas], tecla_s
 s_break:
         CMP     AL, 9Fh
         JNE     p_press
-        MOV     byte [key_s], 0
-        JMP     fim
+        MOV     AX, tecla_s    
+        NOT     AX
+        AND     word [teclas], AX
 p_press:
         CMP     AL, 19h
         JNE     p_break
-        MOV     byte [key_p], 1
-        JMP     fim
-
+        OR      word [teclas], tecla_p
 p_break:
         CMP     AL, 99h
         JNE     fim
-        MOV     byte [key_p], 0
-        JMP     fim
+        MOV     AX, tecla_p   
+        NOT     AX
+        AND     word [teclas], AX
+y_press:
+        CMP     AL, 15h
+        JNE     y_break
+        OR      word [teclas], tecla_y
+y_break:
+        CMP     AL, 95h
+        JNE     n_press
+        MOV     AX, tecla_y   
+        NOT     AX
+        AND     word [teclas], AX
+n_press:
+        CMP     AL, 31h
+        JNE     n_break
+        OR      word [teclas], tecla_n
+n_break:
+        CMP     AL, 0B1h
+        JNE     fim
+        MOV     AX, tecla_n   
+        NOT     AX
+        AND     word [teclas], AX
+
 
 fim:    
         IN      AL, kb_ctl				; Le porta 61h, pois o bit mais significativo "bit 7" 
@@ -124,7 +140,17 @@ segment data public
         INT9    EQU 9h					; Interrupção por hardware do teclado
         cs_dos  DW  1					; Variável de 2 bytes para armacenar o CS da INT 9
         offset_dos  DW 1				; Variável de 2 bytes para armacenar o IP da INT 9
-
+        
+        teclas				dw 0
+        tecla_w				equ 0000000000000001b
+        tecla_a				equ 0000000000000010b
+        tecla_s				equ 0000000000000100b
+        tecla_d				equ 0000000000001000b
+        tecla_q				equ 0000000000010000b
+        tecla_p				equ 0000000000100000b
+        tecla_y				equ 0000000001000000b
+        tecla_n				equ 0000000010000000b
+        tecla_enter			equ 0000000100000000b
 
 segment stack stack						; Segmento da pilha -> SS
     resb 256							; Reserva 256 bytes para a pilha
