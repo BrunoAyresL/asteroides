@@ -1,22 +1,17 @@
-extern tabela_sen, tabela_cos, line, cor, vidas, reseta_asteroides
-global render_nave, matar_nave, 
-global nave_angulo, nave_movendo, nave_tras, nave_real
+extern tabela_sen, tabela_cos   ; tabelas.asm
+extern line, cor        ; render.asm
+extern vidas    ; jogo.asm
+extern reseta_asteroides        ; ast.asm
+extern reseta_tiros     ; tiros.asm
 
-
-; a fazer:
-; criar wireframe do asteroide (modelo)
-; criar disparo (plot_xy, circulo pequeno)
-; normalizar o tempo dos movimentos (se possível)
-; organizar o arquivo render, talvez refazer as partes fáceis
-
-
+global render_nave, matar_nave, nave_movendo
+global nave_tras, nave_real, nave_vx, nave_vy, nave_angulo
 
 render_nave:                                    ; desenha e apaga a nave
-        MOV     byte [cor], 0                   ; desenha a nave em preto (apaga)
-        CALL    desenha_nave
+        MOV     byte [cor], 0                   
+        CALL    desenha_nave                    ; apaga o desenho da nave
 
-        
-        CALL    atualizar_posicao
+        CALL    atualizar_posicao               ; atualiza a nave
         CALL    transformar_pontos
         CALL    checar_colisao
         CALL    transformar_pontos
@@ -25,7 +20,7 @@ render_nave:                                    ; desenha e apaga a nave
         CALL    desenha_nave                                        
         RET
 
-desenha_nave:
+desenha_nave:                                   ; desenha o triângulo da nave
         PUSH    word [nave_real]
         PUSH    word [nave_real + 2]
         PUSH    word [nave_real + 4]
@@ -44,7 +39,6 @@ desenha_nave:
         PUSH    word [nave_real + 10]
         CALL    line                            ; desenha linha da nave
         RET
-
 
 
 atualizar_posicao:                              ; atualiza x e y baseado na velocidade
@@ -65,12 +59,10 @@ atualizar_posicao:                              ; atualiza x e y baseado na velo
         SAR     AX, 7                           ; divide por 128 para retornar a escala
         MOV     BX, AX                          ; salva resultado em BX
         
-
         MOV     AL, [nave_vel]                  ; usa a velocidade base da nave
         MOV     AH, byte [sen]                  ; calcula a velocidade em y baseada no ângulo 
         IMUL    AH                              ; vy = v * sen
         SAR     AX, 7                           ; divide por 128 para ajustar a escala
-
 
         CMP     byte [nave_tras], 1             ; se a tecla S foi pressionada
         JNE     soma_pos                        
@@ -83,7 +75,6 @@ soma_pos:
         ADD     word [nave_x],  BX
 
 final_pos:
-        
         MOV	byte [nave_movendo], 0
 	MOV	byte [nave_tras], 0
         POP     BX                              ; recupera contexto
@@ -212,6 +203,7 @@ matar_nave:
         MOV     byte [nave_angulo], 64  ; reseta o ângulo da nave
         DEC     byte [vidas]            ; diminui uma vida
         CALL    reseta_asteroides       ; mata todos asteroides
+        CALL    reseta_tiros            ; mata todos os tiros
         MOV     AL,12h                  ; limpa a tela e pisca para indicar morte
    	MOV     AH,0
     	INT     10h
@@ -226,7 +218,7 @@ nave_angulo db 64
 nave_vx dw 0
 nave_vy dw 0
 
-nave_vel db 12
+nave_vel db 8
 
 nave_movendo db 0
 nave_tras db 0
@@ -236,9 +228,9 @@ sen db 0
 cos db 0
 
 nave_modelo:                            ; pontos da nave em relação ao centro (0,0)
-    db      -9, 12
-    db      -9, -12
-    db      21, 0
+    db      -6, 8
+    db      -6, -8
+    db      14, 0
 
 nave_real:                              ; pontos na tela
     dw      0, 0

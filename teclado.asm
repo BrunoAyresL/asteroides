@@ -1,4 +1,4 @@
-global teclas, tecla_w, tecla_a, tecla_s, tecla_d, tecla_p, tecla_q, tecla_y, tecla_n, tecla_enter 
+global teclas, tecla_w, tecla_a, tecla_s, tecla_d, tecla_p, tecla_q, tecla_y, tecla_n, tecla_enter, tecla_space
 global iniciar_teclado
 global encerrar_teclado
 
@@ -93,7 +93,7 @@ p_press:
         OR      word [teclas], tecla_p
 p_break:
         CMP     AL, 99h
-        JNE     fim
+        JNE     y_press
         MOV     AX, tecla_p   
         NOT     AX
         AND     word [teclas], AX
@@ -113,11 +113,30 @@ n_press:
         OR      word [teclas], tecla_n
 n_break:
         CMP     AL, 0B1h
-        JNE     fim
+        JNE     space_press
         MOV     AX, tecla_n   
         NOT     AX
         AND     word [teclas], AX
-
+space_press:
+        CMP     AL, 39h
+        JNE     space_break
+        OR      word [teclas], tecla_space
+space_break:
+        CMP     AL, 0B9h
+        JNE     enter_press
+        MOV     AX, tecla_space   
+        NOT     AX
+        AND     word [teclas], AX
+enter_press:
+        CMP     AL, 1Ch
+        JNE     enter_break
+        OR      word [teclas], tecla_enter
+enter_break:
+        CMP     AL, 9Ch
+        JNE     fim
+        MOV     AX, tecla_enter   
+        NOT     AX
+        AND     word [teclas], AX
 
 fim:    
         IN      AL, kb_ctl				; Le porta 61h, pois o bit mais significativo "bit 7" 
@@ -151,6 +170,7 @@ segment data public
         tecla_y				equ 0000000001000000b
         tecla_n				equ 0000000010000000b
         tecla_enter			equ 0000000100000000b
+        tecla_space                     equ 0000001000000000b
 
 segment stack stack						; Segmento da pilha -> SS
     resb 256							; Reserva 256 bytes para a pilha
