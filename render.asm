@@ -1,10 +1,11 @@
+; funçóes gráficas do laboratório 5
+
+global line, plot_xy, cor, circle, escrever_string, full_circle, limpa_tela
 ;-----------------------------------------------------------------------------
 ;
 ; Função line
 ; PUSH x1; PUSH y1; PUSH x2; PUSH y2; call line;  (x<639, y<479)
 ;
-global line, plot_xy, cor, circle, escrever_string, full_circle, limpa_tela
-
 line:
 		PUSH 	BP
 	    MOV	 	BP,SP

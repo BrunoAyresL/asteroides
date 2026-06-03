@@ -1,57 +1,55 @@
-global main_menu, sair_menu, pause_menu, gameover_menu
-
 extern dificuldade, estado_atual, estado_anterior, sair   ; main.asm
 extern cor, escrever_string     ; render.asm
-extern inicia_jogo ; jogo.asm
-extern teclas, tecla_w, tecla_a, tecla_s, tecla_d, tecla_p, tecla_q, tecla_y, tecla_n, tecla_enter, tecla_space 
+extern inicia_jogo 	; jogo.asm
+extern teclas, tecla_w, tecla_a, tecla_s, tecla_d, tecla_p, tecla_q, tecla_y, tecla_n, tecla_enter, tecla_space ; teclado.asm
+
+global main_menu, sair_menu, pause_menu, gameover_menu
 
 main_menu:
 		MOV 	byte [cor], 15
 		CALL 	print_texto_menu							; desenha texto do menu
 
 segue_main_menu:
-		CMP 	byte [dificuldade], 0
+		CMP 	byte [dificuldade], 0						; verifica a dificuldade 
 		JNE		printa_facil
-		MOV 	byte [cor], 14
+		MOV 	byte [cor], 14								; se estiver no fácil, desenha a palavra em amarelo
 printa_facil:
-		MOV		SI, texto_facil
+		MOV		SI, texto_facil						
 		MOV		DH, 14
 		MOV 	DL, 37
-		CALL 	escrever_string
+		CALL 	escrever_string								; desenha texto do fácil
 
 		MOV 	byte [cor], 15
 		CMP 	byte [dificuldade], 1
 		JNE		printa_medio
-		MOV 	byte [cor], 14
+		MOV 	byte [cor], 14								; se estiver no médio, desenha a palavra em amarelo
 printa_medio:		
 		MOV		SI, texto_medio
 		MOV		DH, 16
 		MOV 	DL, 37
-		CALL 	escrever_string
+		CALL 	escrever_string								; desenha texto do médio
 
 		MOV 	byte [cor], 15
 		CMP 	byte [dificuldade], 2
 		JNE		printa_dificil
-		MOV 	byte [cor], 14
+		MOV 	byte [cor], 14								; se estiver no difícil, desenha a palavra em amarelo
 printa_dificil:
 		MOV		SI, texto_dificil
 		MOV		DH, 18
 		MOV 	DL, 36
-		CALL 	escrever_string
+		CALL 	escrever_string								; desenha texto do difícil
 
 testa_tecla_enter:
-		TEST 	word [teclas], tecla_enter
+		TEST 	word [teclas], tecla_enter					; verifica se a tecla enter foi pressionada
 		JZ 		testa_tecla_s
-		CALL 	inicia_jogo
-
-
+		CALL 	inicia_jogo									; começa o jogo e sai do menu
 		JMP 	fim_main_menu
 
 testa_tecla_s:
 		TEST	word [teclas], tecla_s						; checa se tecla s foi pressionada
 		JZ		testa_tecla_w
-		INC 	byte [dificuldade]
-		AND 	byte [dificuldade], 3
+		INC 	byte [dificuldade]							; muda a dificuldade
+		AND 	byte [dificuldade], 3				
 		
 		MOV 	AX, tecla_s
 		NOT 	AX
@@ -60,7 +58,7 @@ testa_tecla_s:
 testa_tecla_w:		
 		TEST	word [teclas], tecla_w						; checa se tecla w foi pressionada
 		JZ		seta_dificuldade
-		DEC 	byte [dificuldade]
+		DEC 	byte [dificuldade]							; muda a dificuldade
 		AND 	byte [dificuldade], 3
 
 		MOV 	AX, tecla_w
@@ -68,7 +66,7 @@ testa_tecla_w:
 		AND		word [teclas], AX							; retorna o input da tecla w
 seta_dificuldade:
 
-		CMP 	byte [dificuldade], 3
+		CMP 	byte [dificuldade], 3						; se a dificuldade for 3 (nenhuma), volta para 0 (fácil)
 		JNE		fim_main_menu
 		MOV 	byte [dificuldade], 0
 fim_main_menu:
@@ -95,21 +93,21 @@ fim_pause_menu:
 
 sair_menu:
 		MOV 	byte [cor], 11
-		CALL 	print_texto_sair						; desenha texto do gameover 
+		CALL 	print_texto_sair							; desenha texto do gameover 
 
 		TEST	word [teclas], tecla_y						; checa se tecla y foi pressionada
-		JZ		segue_sair_menu										; se foi, fecha o programa
+		JZ		segue_sair_menu								; se foi, fecha o programa
 		CALL 	sair
 segue_sair_menu:		
 
 		TEST 	word [teclas], tecla_n  					; checa se tecla n foi pressionada
-		JZ		fim_sair_menu									; se não foi, segue o loop 
+		JZ		fim_sair_menu								; se não foi, segue o loop 
 
 		MOV 	AL, byte [estado_anterior]
-		MOV		byte [estado_atual], AL			; muda o estado para o anterior
+		MOV		byte [estado_atual], AL						; muda o estado para o anterior
 
 		MOV 	byte [cor], 0
-		CALL 	print_texto_sair						; apaga o texto 
+		CALL 	print_texto_sair							; apaga o texto 
 fim_sair_menu:
 		RET
 
@@ -182,7 +180,6 @@ print_texto_menu:
 		MOV 	DL, 28
 		CALL 	escrever_string
 		RET
-
 
 segment data 
 

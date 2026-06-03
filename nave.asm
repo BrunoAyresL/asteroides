@@ -1,4 +1,4 @@
-extern tabela_sen, tabela_cos   ; tabelas.asm
+extern tabela_sen   ; tabelas.asm
 extern line, cor        ; render.asm
 extern vidas    ; jogo.asm
 extern reseta_asteroides        ; ast.asm
@@ -190,7 +190,9 @@ calcular_sen_cos:
         XOR     BH, BH                  ; usa só a parte baixa
         MOV     AL, [tabela_sen + BX]   ; usa a tabela_sen para achar o valor sen * 127
         MOV     [sen], AL               ; salva em sen
-        MOV     AL, [tabela_cos + BX]   ; usa a tabela_sen para achar o valor sen * 127
+        ADD     BL, 64                  ; cos = sen (x + 90 graus)
+        XOR     BH, BH
+        MOV     AL, [tabela_sen + BX]   ; usa a tabela_sen para achar o valor cos * 127
         MOV     [cos], AL               ; salva em cos
 
         POP     BX                      ; recupera contexto
@@ -214,7 +216,7 @@ segment data
 
 nave_x dw 320 
 nave_y dw 240
-nave_angulo db 64
+nave_angulo db 64                       ; ângulo da nave de 0, 255 -> [0, 2pi)
 nave_vx dw 0
 nave_vy dw 0
 

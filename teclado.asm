@@ -1,7 +1,5 @@
 global teclas, tecla_w, tecla_a, tecla_s, tecla_d, tecla_p, tecla_q, tecla_y, tecla_n, tecla_enter, tecla_space
-global iniciar_teclado
-global encerrar_teclado
-
+global iniciar_teclado, encerrar_teclado
 
 segment code
 
@@ -14,30 +12,30 @@ iniciar_teclado:
         MOV     AX, [ES:INT9*4+2] 
         MOV     [cs_dos], AX			; Salva na variável cs_dos o valor do CS do vector de INTerrupção 9     
         MOV     [ES:INT9*4+2], CS		; Atualiza o valor do CS do vector de INTerrupção 9 com o CS do programa atual 
-        MOV     WORD [ES:INT9*4],keyINT	; Atualiza o valor do IP do vector de INTerrupção 9 com o offset "keyINT" do programa atual
-        STI								; Habilita INTerrupções por hardware - pin INTR SIM atende INTerrupções externas
+        MOV     WORD [ES:INT9*4],keyINT	        ; Atualiza o valor do IP do vector de INTerrupção 9 com o offset "keyINT" do programa atual
+        STI					; Habilita INTerrupções por hardware - pin INTR SIM atende INTerrupções externas
         RET
 
 
-encerrar_teclado:										; Ao sair do programa temos que restaurar o CS:IP da INTerrupção 9, que incialmente alteramos nas linhas 26 e 27
-        CLI								; Deshabilita INTerrupções por hardware - pin INTR NÃO atende INTerrupções externas
-        XOR     AX, AX					; Limpa o registrador AX, é equivalente a fazer "MOV AX,0"				
-        MOV     ES, AX					; Inicializa o registrador de Segmento Extra ES para acessar à região de vetores de INTerrupção (posição zero de memoria)
+encerrar_teclado:				; Ao sair do programa temos que restaurar o CS:IP da INTerrupção 9, que incialmente alteramos nas linhas 26 e 27
+        CLI					; Deshabilita INTerrupções por hardware - pin INTR NÃO atende INTerrupções externas
+        XOR     AX, AX				; Limpa o registrador AX, é equivalente a fazer "MOV AX,0"				
+        MOV     ES, AX				; Inicializa o registrador de Segmento Extra ES para acessar à região de vetores de INTerrupção (posição zero de memoria)
         MOV     AX, [cs_dos]			; Carrega em AX o valor do CS do vector de INTerrupção 9 que foi salvo na variável cs_dos -> linha 25
         MOV     [ES:INT9*4+2], AX		; Atualiza o valor do CS do vector de INTerrupção 9 que foi salvo na variável cs_dos
         MOV     AX, [offset_dos]		; Carrega em AX o valor do IP do vector de INTerrupção 9 que foi salvo na variável offset_dos -> linha 23
         MOV     [ES:INT9*4], AX 		; Atualiza o valor do IP do vector de INTerrupção 9 que foi salvo na variável offset_dos
         STI
-        RET						; Chama Interrupção 21h para retornar o controle ao sistema operacional -> sai de forma segura da execução do programa
+        RET					; Chama Interrupção 21h para retornar o controle ao sistema operacional -> sai de forma segura da execução do programa
 
 
-keyINT:									; Este segmento de código só será executado se uma tecla for presionada, ou seja, se a INT 9h for acionada!
+keyINT:			                	; Interrupção que roda quando tecla é pressionada
         PUSH    AX	
         PUSH    DS
         MOV     AX, SEG teclas
-        MOV     DS, AX			; Le a porta 60h, que é onde está o byte do Make/Break da tecla. Esse valor é fornecido pelo chip "8255 PPI"
+        MOV     DS, AX			        ; lê o valor da tecla
         IN      AL, kb_data
-a_press:
+a_press:                                        ; verifica cada tecla relevante pro jogo, se foi pressionada ou solta
         CMP     AL, 1Eh
         JNE     a_break
         OR      word [teclas], tecla_a
@@ -145,11 +143,11 @@ fim:
         AND     AL, 7Fh					; Restablece o valor do bit mais significativo do registrador AL (0XXXXXXX), alterado na linha 90 	
         OUT     kb_ctl, AL				; Reinicia o registrador de dislocamento 74LS322 e Livera a interrupção "CLR do flip-flop 7474". O 8255 - Programmable Peripheral Interface (PPI) fica pronto para recever um outro código da tecla https://es.wikipedia.org/wiki/INTel_8255
         MOV     AL, eoi					; Carrega o AL com a byte de End of Interruption, -> 20h por default
-        OUT     pictrl, AL				; Livera o PIC
+        OUT     pictrl, AL				; Libera o PIC
         
-	POP     DS	
+	POP     DS	                                ; recupera o contexto
         POP     AX
-        IRET							; Retorna da interrupção
+        IRET						
 
 segment data public
         kb_data EQU 60h  				; PORTA DE LEITURA DE TECLADO
@@ -160,7 +158,7 @@ segment data public
         cs_dos  DW  1					; Variável de 2 bytes para armacenar o CS da INT 9
         offset_dos  DW 1				; Variável de 2 bytes para armacenar o IP da INT 9
         
-        teclas				dw 0
+        teclas				dw 0            ; o estado das teclas é armazenada em uma word, cada bit é uma tecla
         tecla_w				equ 0000000000000001b
         tecla_a				equ 0000000000000010b
         tecla_s				equ 0000000000000100b
@@ -172,7 +170,7 @@ segment data public
         tecla_enter			equ 0000000100000000b
         tecla_space                     equ 0000001000000000b
 
-segment stack stack						; Segmento da pilha -> SS
-    resb 256							; Reserva 256 bytes para a pilha
-stacktop:								; Define ponteiro do topo da pilha -> SP
+segment stack stack					; Segmento da pilha -> SS
+    resb 256						; Reserva 256 bytes para a pilha
+stacktop:						; Define ponteiro do topo da pilha -> SP
 

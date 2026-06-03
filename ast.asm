@@ -1,5 +1,5 @@
 extern cor, circle      ; render.asm
-extern tabela_cos, tabela_sen   ; tabelas.asm
+extern tabela_sen   ; tabelas.asm
 
 global render_asteroide, spawn_asteroide, asteroides, reseta_asteroides, limpar_asteroide
 global ast_x, ast_y, ast_vivo, ast_size, max_asteroides
@@ -119,8 +119,9 @@ ast_vel_aleatoria:                              ; escolhe uma velocidade para o 
         ADD     DX, 3                           ; muda intervalo de velocidade para 3-6
 
         MOV     BL, byte [SI + ast_angulo]      ; recebe o ângulo do asteroide
+        ADD     BL, 64
         XOR     BH, BH
-        MOV     AL, [tabela_cos + BX]           ; calcula cos
+        MOV     AL, [tabela_sen + BX]           ; calcula cos
         MOV     AH, DL
         IMUL    AH                              ; vx = vel * cos 
         SAR     AX, 7                           ; divide por 128 para ajustar a escala
